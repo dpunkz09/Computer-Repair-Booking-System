@@ -1,0 +1,146 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Setting;
+use App\Models\Ticket;
+use App\Models\User;
+use App\Support\SiteSettings;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
+
+class SiteSettingsTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guest_cannot_access_admin_settings(): void
+    {
+        $this->get(route('admin.settings.index'))->assertRedirect(route('login'));
+    }
+
+    public function test_customer_cannot_access_admin_settings(): void
+    {
+        $customer = User::factory()->customer()->create();
+
+        $this->actingAs($customer)
+            ->get(route('admin.settings.index'))
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_view_settings_page(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.settings.index'))
+            ->assertOk()
+            ->assertSee('Site Settings');
+    }
+
+    public function test_admin_can_update_site_settings(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('admin.settings.update'), [
+                'site_name' => 'Acme Repairs',
+                'site_tagline' => 'We fix it fast',
+                'seo_title' => 'Acme Repairs — Book Online',
+                'seo_description' => 'Best repair shop in town.',
+                'seo_keywords' => 'repair, acme',
+                'contact_email' => 'help@acme.test',
+                'contact_phone' => '555-0100',
+                'support_hours' => 'Mon–Sat 8–8',
+                'footer_text' => 'Acme Repairs ©',
+                'primary_color' => '#ff5500',
+                'welcome_badge' => 'Welcome',
+                'welcome_headline' => 'Fix Your Device Today',
+                'welcome_subheadline' => 'Book online in minutes.',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame('Acme Repairs', SiteSettings::getOrDefault('site_name'));
+        $this->assertSame('#ff5500', SiteSettings::getOrDefault('primary_color'));
+        $this->assertSame('help@acme.test', Setting::where('key', 'contact_email')->value('value'));
+    }
+
+    public function test_admin_can_upload_site_logo(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('admin.settings.update'), [
+                'site_name' => 'ComTech Repair',
+                'primary_color' => '#2563eb',
+                'logo' => UploadedFile::fake()->image('logo.png', 200, 80),
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $path = Setting::where('key', 'logo_path')->value('value');
+        $this->assertNotEmpty($path);
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_new_ticket_is_auto_assigned_when_enabled(): void
+    {
+        $customer = User::factory()->customer()->create();
+        $technician = User::factory()->technician()->create();
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put(route('admin.settings.update'), [
+                'site_name' => 'ComTech Repair',
+                'primary_color' => '#2563eb',
+                'auto_assign_enabled' => '1',
+                'auto_assign_technician_id' => $technician->id,
+            ]);
+
+        $this->actingAs($customer)
+            ->post(route('tickets.store'), [
+                'device_type' => 'Laptop',
+                'brand' => 'HP',
+                'os' => 'Windows 11',
+                'issue_summary' => 'No power',
+                'description' => 'Laptop will not turn on.',
+                'priority' => 4,
+            ])
+            ->assertRedirect();
+
+        $ticket = Ticket::query()->latest('id')->first();
+
+        $this->assertSame($technician->id, $ticket->technician_id);
+        $this->assertSame('assigned', $ticket->status);
+    }
+
+    public function test_new_ticket_stays_unassigned_when_auto_assign_disabled(): void
+    {
+        $customer = User::factory()->customer()->create();
+        User::factory()->technician()->create();
+
+        SiteSettings::setMany([
+            'auto_assign_enabled' => false,
+            'auto_assign_technician_id' => '',
+        ]);
+
+        $this->actingAs($customer)
+            ->post(route('tickets.store'), [
+                'device_type' => 'Desktop',
+                'brand' => 'Dell',
+                'os' => 'Windows 10',
+                'issue_summary' => 'Slow boot',
+                'description' => 'Takes forever to start.',
+                'priority' => 2,
+            ])
+            ->assertRedirect();
+
+        $ticket = Ticket::query()->latest('id')->first();
+
+        $this->assertNull($ticket->technician_id);
+        $this->assertSame('new', $ticket->status);
+    }
+}
