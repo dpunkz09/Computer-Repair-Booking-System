@@ -36,8 +36,6 @@
     @csrf
     @method('PUT')
 
-    <fieldset @disabled($readOnly ?? false) class="contents">
-
     <div class="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-4">
         @foreach(['branding' => 'Branding', 'seo' => 'SEO', 'homepage' => 'Homepage', 'contact' => 'Contact', 'email' => 'Email / SMTP', 'tickets' => 'Tickets', 'security' => 'Security', 'legal' => 'Legal'] as $key => $label)
             <button type="button" @click="tab = '{{ $key }}'"
@@ -47,6 +45,8 @@
             </button>
         @endforeach
     </div>
+
+    <fieldset @disabled($readOnly ?? false) class="min-w-0 border-0 p-0 m-0">
 
     <div class="space-y-6">
         {{-- Branding --}}
@@ -339,6 +339,8 @@
         </div>
     </div>
 
+    </fieldset>
+
     @unless($readOnly ?? false)
     <div class="mt-8 flex flex-wrap gap-3">
         <button type="submit" class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition">
@@ -358,7 +360,6 @@
         </a>
     </div>
     @endunless
-    </fieldset>
 </form>
 
 <form action="{{ route('admin.settings.test-mail') }}" method="POST" class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ ($readOnly ?? false) ? 'opacity-90' : '' }}">
