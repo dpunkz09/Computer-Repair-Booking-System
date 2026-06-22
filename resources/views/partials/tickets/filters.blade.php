@@ -27,7 +27,7 @@
                     @endfor
                 </select>
             </div>
-            @if(Auth::user()->role === 'admin')
+            @if(Auth::user()->isAdmin())
                 <div>
                     <label for="customer_id" class="block text-sm font-medium text-gray-700 mb-1.5">Customer</label>
                     <select name="customer_id" id="customer_id" class="w-full rounded-xl border-gray-200 bg-gray-50 px-3 py-2.5 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500">

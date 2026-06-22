@@ -5,10 +5,17 @@
 @section('content')
 <div class="mb-8">
     <h1 class="text-3xl font-bold text-gray-900">Service Categories</h1>
-    <p class="text-gray-600 mt-2">Manage repair service types available for bookings</p>
+    <p class="text-gray-600 mt-2">
+        @if(Auth::user()->canManageCategories())
+            Manage repair service types available for bookings
+        @else
+            View repair service types (read-only in demo mode)
+        @endif
+    </p>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    @if(Auth::user()->canManageCategories())
     <div class="lg:col-span-1">
         <div class="bg-white rounded-lg shadow p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-4">Add Category</h2>
@@ -32,8 +39,9 @@
             </form>
         </div>
     </div>
+    @endif
 
-    <div class="lg:col-span-2">
+    <div class="{{ Auth::user()->canManageCategories() ? 'lg:col-span-2' : 'lg:col-span-3' }}">
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -41,7 +49,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        @if(Auth::user()->canManageCategories())
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -54,6 +64,7 @@
                                     {{ $category->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
+                            @if(Auth::user()->canManageCategories())
                             <td class="px-6 py-4">
                                 <details class="inline">
                                     <summary class="text-blue-600 hover:text-blue-700 font-bold cursor-pointer">Edit</summary>
@@ -75,10 +86,11 @@
                                     <button type="submit" class="text-red-600 hover:text-red-700 font-bold text-sm">Delete</button>
                                 </form>
                             </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No categories yet.</td>
+                            <td colspan="{{ Auth::user()->canManageCategories() ? 4 : 3 }}" class="px-6 py-4 text-center text-gray-500">No categories yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

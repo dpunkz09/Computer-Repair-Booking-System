@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\ServiceCategory;
 use App\Models\User;
+use App\Support\UserRole;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -40,7 +41,17 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test Technician',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'role' => 'technician',
+                'role' => UserRole::TECHNICIAN,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'demo@example.com'],
+            [
+                'name' => 'Demo Admin',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'role' => UserRole::DEMO_ADMIN,
             ]
         );
 

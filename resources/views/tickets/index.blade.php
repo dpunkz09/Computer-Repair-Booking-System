@@ -7,7 +7,7 @@
     <div>
         <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Tickets</h1>
         <p class="mt-1 text-gray-500">
-            @if(Auth::user()->role === 'admin')
+            @if(Auth::user()->isAdmin())
                 All repair tickets across the system
             @elseif(Auth::user()->role === 'technician')
                 Tickets assigned to you
@@ -68,7 +68,7 @@
                     <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Issue</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
                     <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Priority</th>
-                    @if(Auth::user()->role === 'admin')
+                    @if(Auth::user()->isAdmin())
                         <th class="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Technician</th>
                     @endif
                     <th class="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-gray-500"></th>
@@ -101,7 +101,7 @@
                         <td class="px-5 py-4 text-sm text-gray-700 max-w-[200px] truncate">{{ $ticket->issue_summary }}</td>
                         <td class="px-5 py-4">@include('partials.dashboard.status-badge', ['status' => $ticket->displayStatus()])</td>
                         <td class="px-5 py-4">@include('partials.dashboard.priority', ['priority' => $ticket->priority])</td>
-                        @if(Auth::user()->role === 'admin')
+                        @if(Auth::user()->isAdmin())
                             <td class="px-5 py-4 text-sm text-gray-700">{{ $ticket->technician?->name ?? '—' }}</td>
                         @endif
                         <td class="px-5 py-4 text-right">

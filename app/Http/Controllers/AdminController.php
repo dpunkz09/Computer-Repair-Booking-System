@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Support\AdminAuditLog;
 use App\Support\TicketStatus;
+use App\Support\UserRole;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -85,8 +86,12 @@ class AdminController extends Controller
      */
     public function promoteAdmin(User $user)
     {
-        if ($user->role === 'admin') {
+        if ($user->role === UserRole::ADMIN) {
             return back()->with('error', 'User is already an admin.');
+        }
+
+        if ($user->role === UserRole::DEMO_ADMIN) {
+            return back()->with('error', 'User is already a demo admin.');
         }
 
         $previousRole = $user->role;
@@ -106,7 +111,7 @@ class AdminController extends Controller
      */
     public function demoteAdmin(Request $request, User $user)
     {
-        if ($user->role !== 'admin') {
+        if ($user->role !== UserRole::ADMIN) {
             return back()->with('error', 'Only admins can be demoted.');
         }
 
@@ -114,7 +119,7 @@ class AdminController extends Controller
             return back()->with('error', 'You cannot demote your own account.');
         }
 
-        if (User::where('role', 'admin')->count() <= 1) {
+        if (User::where('role', UserRole::ADMIN)->count() <= 1) {
             return back()->with('error', 'Cannot demote the last admin account.');
         }
 

@@ -6,8 +6,20 @@
 <div class="mb-8">
     <p class="text-sm font-medium text-indigo-600">{{ now()->format('l, F j') }}</p>
     <h1 class="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Site Settings</h1>
-    <p class="mt-1 text-gray-500">Customize branding, SEO, contact info, email delivery, and ticket automation.</p>
+    <p class="mt-1 text-gray-500">
+        @if($readOnly ?? false)
+            View-only access to branding, SEO, email, security, and automation settings.
+        @else
+            Customize branding, SEO, contact info, email delivery, and ticket automation.
+        @endif
+    </p>
 </div>
+
+@if($readOnly ?? false)
+    <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <strong>Read-only:</strong> Demo admin accounts cannot change site settings. Contact a full administrator to make updates.
+    </div>
+@endif
 
 @if($errors->any())
     <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800">
@@ -23,6 +35,8 @@
       x-data="{ tab: 'branding' }">
     @csrf
     @method('PUT')
+
+    <fieldset @disabled($readOnly ?? false) class="contents">
 
     <div class="mb-6 flex flex-wrap gap-2 border-b border-gray-200 pb-4">
         @foreach(['branding' => 'Branding', 'seo' => 'SEO', 'homepage' => 'Homepage', 'contact' => 'Contact', 'email' => 'Email / SMTP', 'tickets' => 'Tickets', 'security' => 'Security', 'legal' => 'Legal'] as $key => $label)
@@ -325,6 +339,7 @@
         </div>
     </div>
 
+    @unless($readOnly ?? false)
     <div class="mt-8 flex flex-wrap gap-3">
         <button type="submit" class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition">
             Save All Settings
@@ -333,6 +348,7 @@
             Cancel
         </a>
     </div>
+    </fieldset>
 </form>
 
 <form action="{{ route('admin.settings.test-mail') }}" method="POST" class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -350,5 +366,9 @@
         </button>
     </div>
 </form>
+    @else
+    </fieldset>
+</form>
+    @endunless
 
 @endsection

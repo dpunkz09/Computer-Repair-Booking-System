@@ -113,11 +113,11 @@ class TicketController extends Controller
 
         $tickets = $query->paginate(10)->withQueryString();
 
-        $technicians = $user->role === 'admin'
+        $technicians = $user->isAdmin()
             ? User::query()->where('role', 'technician')->orderBy('name')->get(['id', 'name'])
             : collect();
 
-        $customers = $user->role === 'admin'
+        $customers = $user->isAdmin()
             ? User::query()->where('role', 'customer')->orderBy('name')->get(['id', 'name'])
             : collect();
 

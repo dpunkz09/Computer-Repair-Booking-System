@@ -22,7 +22,7 @@ class TicketPolicy
     public function view(User $user, Ticket $ticket): bool
     {
         // Admin can view all tickets
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
         // Customer can view their own tickets
@@ -55,7 +55,7 @@ class TicketPolicy
         }
 
         // Admin can update any ticket
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
         // Technician can update their assigned tickets
@@ -71,7 +71,7 @@ class TicketPolicy
     public function delete(User $user, Ticket $ticket): bool
     {
         // Only admin can delete tickets
-        return $user->role === 'admin';
+        return $user->isFullAdmin();
     }
 
     /**
@@ -105,7 +105,7 @@ class TicketPolicy
             return false;
         }
 
-        return $user->role === 'admin'
+        return $user->isAdmin()
             || ($user->role === 'technician' && $ticket->technician_id === $user->id);
     }
 

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserNotification;
 use App\Support\MailSettings;
 use App\Support\SiteSettings;
+use App\Support\UserRole;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
@@ -53,7 +54,7 @@ class NotificationService
     public static function notifyAdmins(string $type, string $title, string $message, array $data = []): void
     {
         User::query()
-            ->where('role', 'admin')
+            ->where('role', UserRole::ADMIN)
             ->each(fn (User $admin) => self::notify($admin, $type, $title, $message, $data));
     }
 

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 // Home page (customer-facing only; staff go to dashboard)
 Route::get('/', function () {
-    if (Auth::check() && Auth::user()->role !== 'customer') {
+    if (Auth::check() && Auth::user()->isStaff()) {
         return redirect()->route('dashboard');
     }
 
@@ -96,23 +96,27 @@ Route::middleware(['auth', 'verified.when.required', 'admin.two.factor'])->group
     Route::post('/notifications/{userNotification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 });
 
-// Admin Routes
-Route::middleware(['auth', 'verified.when.required', 'admin.two.factor', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+// Admin Routes — demo admins can view and manage tickets; full admins unlock settings & user roles
+Route::middleware(['auth', 'verified.when.required', 'admin.two.factor', 'role:admin,demo_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminController::class, 'users'])->name('users');
-    Route::post('/users/{user}/upgrade', [AdminController::class, 'upgradeTechnician'])->name('upgrade-technician');
-    Route::post('/users/{user}/downgrade', [AdminController::class, 'downgradeTechnician'])->name('downgrade-technician');
-    Route::post('/users/{user}/promote-admin', [AdminController::class, 'promoteAdmin'])->name('promote-admin');
-    Route::post('/users/{user}/demote-admin', [AdminController::class, 'demoteAdmin'])->name('demote-admin');
     Route::get('/unassigned-tickets', [AdminController::class, 'unassignedTickets'])->name('unassigned-tickets');
     Route::post('/tickets/{ticket}/assign', [AdminController::class, 'assignTicket'])->name('assign-ticket');
     Route::post('/tickets/{ticket}/unassign', [AdminController::class, 'unassignTicket'])->name('unassign-ticket');
 
     Route::get('/categories', [ServiceCategoryController::class, 'index'])->name('categories.index');
-    Route::post('/categories', [ServiceCategoryController::class, 'store'])->name('categories.store');
-    Route::put('/categories/{category}', [ServiceCategoryController::class, 'update'])->name('categories.update');
-    Route::delete('/categories/{category}', [ServiceCategoryController::class, 'destroy'])->name('categories.destroy');
-
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
-    Route::post('/settings/test-mail', [AdminSettingsController::class, 'sendTestMail'])->name('settings.test-mail');
+
+    Route::middleware('full.admin')->group(function () {
+        Route::post('/users/{user}/upgrade', [AdminController::class, 'upgradeTechnician'])->name('upgrade-technician');
+        Route::post('/users/{user}/downgrade', [AdminController::class, 'downgradeTechnician'])->name('downgrade-technician');
+        Route::post('/users/{user}/promote-admin', [AdminController::class, 'promoteAdmin'])->name('promote-admin');
+        Route::post('/users/{user}/demote-admin', [AdminController::class, 'demoteAdmin'])->name('demote-admin');
+
+        Route::post('/categories', [ServiceCategoryController::class, 'store'])->name('categories.store');
+        Route::put('/categories/{category}', [ServiceCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [ServiceCategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+        Route::post('/settings/test-mail', [AdminSettingsController::class, 'sendTestMail'])->name('settings.test-mail');
+    });
 });

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\QueuedResetPassword;
 use App\Notifications\QueuedVerifyEmail;
+use App\Support\UserRole;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
@@ -38,6 +39,46 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function hasTwoFactorEnabled(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role === UserRole::CUSTOMER;
+    }
+
+    public function isStaff(): bool
+    {
+        return ! $this->isCustomer();
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, UserRole::ADMIN_PANEL, true);
+    }
+
+    public function isFullAdmin(): bool
+    {
+        return $this->role === UserRole::ADMIN;
+    }
+
+    public function isDemoAdmin(): bool
+    {
+        return $this->role === UserRole::DEMO_ADMIN;
+    }
+
+    public function canManageSystemSettings(): bool
+    {
+        return $this->isFullAdmin();
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->isFullAdmin();
+    }
+
+    public function canManageCategories(): bool
+    {
+        return $this->isFullAdmin();
     }
 
     public function sendEmailVerificationNotification(): void

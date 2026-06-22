@@ -67,7 +67,7 @@ class AuthController extends Controller
             return redirect()->route('verification.notice');
         }
 
-        if ($user->role === 'admin' && $user->hasTwoFactorEnabled()) {
+        if ($user->isFullAdmin() && $user->hasTwoFactorEnabled()) {
             $request->session()->forget('two_factor.passed');
 
             return redirect()->route('two-factor.challenge');

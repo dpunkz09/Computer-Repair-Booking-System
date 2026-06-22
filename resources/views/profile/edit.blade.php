@@ -165,7 +165,7 @@
             </form>
         </div>
         {{-- Two-factor authentication (admins) --}}
-        @if($user->role === 'admin')
+        @if($user->isFullAdmin())
             <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                 <h3 class="text-lg font-semibold text-gray-900">Two-Factor Authentication</h3>
                 <p class="mt-1 text-sm text-gray-500">

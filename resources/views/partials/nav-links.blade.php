@@ -15,7 +15,7 @@
     class="{{ $linkClass }} {{ request()->routeIs('tickets.*') ? $activeClass : $inactiveClass }}">
     Tickets
 </a>
-@if(Auth::user()->role === 'admin')
+@if(Auth::user()->isAdmin())
     <a href="{{ route('admin.users') }}" @if($mobile ?? false) @click="mobileNavOpen = false" @endif
         class="{{ $linkClass }} {{ request()->routeIs('admin.*') ? $activeClass : $inactiveClass }}">
         Admin

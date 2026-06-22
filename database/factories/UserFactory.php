@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Support\UserRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -35,16 +36,21 @@ class UserFactory extends Factory
 
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => 'admin']);
+        return $this->state(fn () => ['role' => UserRole::ADMIN]);
+    }
+
+    public function demoAdmin(): static
+    {
+        return $this->state(fn () => ['role' => UserRole::DEMO_ADMIN]);
     }
 
     public function technician(): static
     {
-        return $this->state(fn () => ['role' => 'technician']);
+        return $this->state(fn () => ['role' => UserRole::TECHNICIAN]);
     }
 
     public function customer(): static
     {
-        return $this->state(fn () => ['role' => 'customer']);
+        return $this->state(fn () => ['role' => UserRole::CUSTOMER]);
     }
 }

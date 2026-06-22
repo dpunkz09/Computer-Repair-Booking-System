@@ -50,7 +50,7 @@ php artisan queue:work
 npm run dev
 ```
 
-Default seeded logins (if seeder was run): `admin@example.com`, `test@example.com`, `technician@example.com` — password: `password`.
+Default seeded logins (if seeder was run): `admin@example.com`, `demo@example.com` (read-only settings), `test@example.com`, `technician@example.com` — password: `password`.
 
 ## Production deployment checklist
 

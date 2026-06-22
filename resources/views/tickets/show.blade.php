@@ -27,7 +27,7 @@
                     Edit Status
                 </a>
             @endcan
-            @if(Auth::user()->role === 'admin' && $ticket->technician_id && ! $ticket->isCancelled())
+            @if(Auth::user()->isAdmin() && $ticket->technician_id && ! $ticket->isCancelled())
                 <form action="{{ route('admin.unassign-ticket', $ticket) }}" method="POST" onsubmit="return confirm('Unassign this ticket?')">
                     @csrf
                     <button type="submit" class="rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700 hover:bg-orange-100 transition">Unassign</button>

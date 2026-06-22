@@ -19,14 +19,20 @@ class AdminSettingsController extends Controller
         private BrandingImageService $brandingImages
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $settings = SiteSettings::allForAdmin();
         $technicians = User::query()->where('role', 'technician')->orderBy('name')->get();
         $logoUrl = SiteSettings::logoUrl();
         $hasMailPassword = MailSettings::hasPassword();
 
-        return view('admin.settings.index', compact('settings', 'technicians', 'logoUrl', 'hasMailPassword'));
+        return view('admin.settings.index', [
+            'settings' => $settings,
+            'technicians' => $technicians,
+            'logoUrl' => $logoUrl,
+            'hasMailPassword' => $hasMailPassword,
+            'readOnly' => ! $request->user()?->canManageSystemSettings(),
+        ]);
     }
 
     public function update(Request $request)
