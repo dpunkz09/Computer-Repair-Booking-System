@@ -6,6 +6,7 @@ use App\Models\ServiceCategory;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,23 +14,35 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'role' => 'admin',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin User',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test Customer',
-            'email' => 'test@example.com',
-            'role' => 'customer',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test Customer',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test Technician',
-            'email' => 'technician@example.com',
-            'role' => 'technician',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'technician@example.com'],
+            [
+                'name' => 'Test Technician',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'role' => 'technician',
+            ]
+        );
 
         $categories = [
             ['name' => 'Hardware Repair', 'description' => 'Physical component repairs and replacements'],
@@ -39,7 +52,10 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            ServiceCategory::create($category);
+            ServiceCategory::updateOrCreate(
+                ['name' => $category['name']],
+                ['description' => $category['description']]
+            );
         }
     }
 }

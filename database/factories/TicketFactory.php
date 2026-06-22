@@ -19,13 +19,13 @@ class TicketFactory extends Factory
             'customer_id' => User::factory(),
             'technician_id' => null,
             'service_category_id' => null,
-            'device_type' => fake()->randomElement(['Desktop', 'Laptop', 'Tablet']),
-            'brand' => fake()->randomElement(['Dell', 'HP', 'Apple', 'Lenovo']),
-            'os' => fake()->randomElement(['Windows 11', 'macOS', 'Ubuntu']),
-            'issue_summary' => fake()->sentence(4),
-            'description' => fake()->paragraph(),
+            'device_type' => $this->faker->randomElement(['Desktop', 'Laptop', 'Tablet']),
+            'brand' => $this->faker->randomElement(['Dell', 'HP', 'Apple', 'Lenovo']),
+            'os' => $this->faker->randomElement(['Windows 11', 'macOS', 'Ubuntu']),
+            'issue_summary' => $this->faker->sentence(4),
+            'description' => $this->faker->paragraph(),
             'status' => 'new',
-            'priority' => fake()->numberBetween(1, 5),
+            'priority' => $this->faker->numberBetween(1, 5),
         ];
     }
 
