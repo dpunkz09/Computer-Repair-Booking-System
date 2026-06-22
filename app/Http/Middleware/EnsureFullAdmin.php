@@ -13,10 +13,16 @@ class EnsureFullAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isFullAdmin()) {
-            abort(403, 'This action is not available in demo mode.');
+        if ($request->user()?->isFullAdmin()) {
+            return $next($request);
         }
 
-        return $next($request);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'This action is not available in demo mode.',
+            ], 403);
+        }
+
+        return back()->with('error', 'This action is not available in demo mode.');
     }
 }

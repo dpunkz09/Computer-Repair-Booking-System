@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,4 +25,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            if ($request->user()?->isDemoAdmin() && ! $request->expectsJson()) {
+                return redirect()
+                    ->back(fallback: route('dashboard'))
+                    ->with('error', 'This action is not available in demo mode.');
+            }
+
+            return null;
+        });
     })->create();

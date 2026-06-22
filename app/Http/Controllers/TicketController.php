@@ -306,6 +306,12 @@ class TicketController extends Controller
      */
     public function destroy(Ticket $ticket)
     {
+        if (Auth::user()->isDemoAdmin()) {
+            return redirect()
+                ->route('tickets.show', $ticket)
+                ->with('error', 'This action is not available in demo mode.');
+        }
+
         $this->authorize('delete', $ticket);
 
         $ticket->delete();

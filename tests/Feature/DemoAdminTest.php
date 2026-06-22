@@ -47,7 +47,37 @@ class DemoAdminTest extends TestCase
                 'site_name' => 'Hacked Site Name',
                 'primary_color' => '#000000',
             ])
-            ->assertForbidden();
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
+    public function test_demo_admin_sees_user_management_actions_disabled(): void
+    {
+        $demoAdmin = User::factory()->demoAdmin()->create();
+        User::factory()->customer()->create();
+
+        $this->actingAs($demoAdmin)
+            ->get(route('admin.users'))
+            ->assertOk()
+            ->assertSee('Upgrade to Technician')
+            ->assertSee('Promote to Admin');
+    }
+
+    public function test_demo_admin_sees_category_forms_disabled(): void
+    {
+        $demoAdmin = User::factory()->demoAdmin()->create();
+        ServiceCategory::create([
+            'name' => 'Screen Repair',
+            'description' => 'Display fixes',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($demoAdmin)
+            ->get(route('admin.categories.index'))
+            ->assertOk()
+            ->assertSee('Add Category')
+            ->assertSee('Create Category')
+            ->assertSee('Delete');
     }
 
     public function test_demo_admin_cannot_manage_users_or_categories(): void
@@ -61,27 +91,25 @@ class DemoAdminTest extends TestCase
         ]);
 
         $this->actingAs($demoAdmin)
-            ->get(route('admin.users'))
-            ->assertOk()
-            ->assertDontSee('Upgrade to Technician');
-
-        $this->actingAs($demoAdmin)
             ->post(route('admin.promote-admin', $customer))
-            ->assertForbidden();
+            ->assertRedirect()
+            ->assertSessionHas('error');
 
         $this->actingAs($demoAdmin)
             ->post(route('admin.categories.store'), [
                 'name' => 'New Category',
                 'description' => 'Should fail',
             ])
-            ->assertForbidden();
+            ->assertRedirect()
+            ->assertSessionHas('error');
 
         $this->actingAs($demoAdmin)
             ->put(route('admin.categories.update', $category), [
                 'name' => 'Changed Name',
                 'is_active' => true,
             ])
-            ->assertForbidden();
+            ->assertRedirect()
+            ->assertSessionHas('error');
     }
 
     public function test_demo_admin_cannot_delete_tickets(): void
@@ -91,7 +119,18 @@ class DemoAdminTest extends TestCase
 
         $this->actingAs($demoAdmin)
             ->delete(route('tickets.destroy', $ticket))
-            ->assertForbidden();
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
+    public function test_login_page_shows_sample_credentials(): void
+    {
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('demo@example.com')
+            ->assertSee('technician@example.com')
+            ->assertSee('test@example.com')
+            ->assertSee('Sample logins');
     }
 
     public function test_demo_admin_can_update_tickets_and_set_eta(): void

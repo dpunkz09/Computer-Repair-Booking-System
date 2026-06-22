@@ -3,45 +3,41 @@
 @section('title', 'Service Categories')
 
 @section('content')
+@php($readOnly = ! Auth::user()->canManageCategories())
+
 <div class="mb-8">
     <h1 class="text-3xl font-bold text-gray-900">Service Categories</h1>
-    <p class="text-gray-600 mt-2">
-        @if(Auth::user()->canManageCategories())
-            Manage repair service types available for bookings
-        @else
-            View repair service types (read-only in demo mode)
-        @endif
-    </p>
+    <p class="text-gray-600 mt-2">Manage repair service types available for bookings</p>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    @if(Auth::user()->canManageCategories())
     <div class="lg:col-span-1">
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 {{ $readOnly ? 'opacity-90' : '' }}">
             <h2 class="text-lg font-bold text-gray-900 mb-4">Add Category</h2>
             <form action="{{ route('admin.categories.store') }}" method="POST">
                 @csrf
-                <div class="mb-4">
-                    <label for="name" class="block text-gray-700 font-bold mb-2">Name</label>
-                    <input type="text" name="name" id="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
-                    <textarea name="description" id="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-                <label class="flex items-center mb-4">
-                    <input type="checkbox" name="is_active" value="1" checked class="rounded border-gray-300">
-                    <span class="ml-2 text-gray-700">Active</span>
-                </label>
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">
-                    Create Category
-                </button>
+                <fieldset @disabled($readOnly) class="border-0 p-0 m-0">
+                    <div class="mb-4">
+                        <label for="name" class="block text-gray-700 font-bold mb-2">Name</label>
+                        <input type="text" name="name" id="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="block text-gray-700 font-bold mb-2">Description</label>
+                        <textarea name="description" id="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <label class="flex items-center mb-4">
+                        <input type="checkbox" name="is_active" value="1" checked class="rounded border-gray-300">
+                        <span class="ml-2 text-gray-700">Active</span>
+                    </label>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                        Create Category
+                    </button>
+                </fieldset>
             </form>
         </div>
     </div>
-    @endif
 
-    <div class="{{ Auth::user()->canManageCategories() ? 'lg:col-span-2' : 'lg:col-span-3' }}">
+    <div class="lg:col-span-2">
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
@@ -49,9 +45,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        @if(Auth::user()->canManageCategories())
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                        @endif
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
@@ -64,33 +58,33 @@
                                     {{ $category->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
-                            @if(Auth::user()->canManageCategories())
                             <td class="px-6 py-4">
-                                <details class="inline">
-                                    <summary class="text-blue-600 hover:text-blue-700 font-bold cursor-pointer">Edit</summary>
-                                    <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="mt-3 p-4 bg-gray-50 rounded-lg space-y-3">
+                                <fieldset @disabled($readOnly) class="min-w-0 border-0 p-0 m-0 {{ $readOnly ? 'opacity-60' : '' }}">
+                                    <details class="inline">
+                                        <summary class="text-blue-600 hover:text-blue-700 font-bold cursor-pointer disabled:cursor-not-allowed">Edit</summary>
+                                        <form action="{{ route('admin.categories.update', $category) }}" method="POST" class="mt-3 p-4 bg-gray-50 rounded-lg space-y-3">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="text" name="name" value="{{ $category->name }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
+                                            <textarea name="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg">{{ $category->description }}</textarea>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" name="is_active" value="1" {{ $category->is_active ? 'checked' : '' }} class="rounded border-gray-300">
+                                                <span class="ml-2 text-gray-700">Active</span>
+                                            </label>
+                                            <button type="submit" class="bg-blue-600 text-white font-bold py-1 px-4 rounded-lg text-sm disabled:cursor-not-allowed">Save</button>
+                                        </form>
+                                    </details>
+                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Delete this category?')">
                                         @csrf
-                                        @method('PUT')
-                                        <input type="text" name="name" value="{{ $category->name }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg" required>
-                                        <textarea name="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg">{{ $category->description }}</textarea>
-                                        <label class="flex items-center">
-                                            <input type="checkbox" name="is_active" value="1" {{ $category->is_active ? 'checked' : '' }} class="rounded border-gray-300">
-                                            <span class="ml-2 text-gray-700">Active</span>
-                                        </label>
-                                        <button type="submit" class="bg-blue-600 text-white font-bold py-1 px-4 rounded-lg text-sm">Save</button>
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-700 font-bold text-sm disabled:cursor-not-allowed">Delete</button>
                                     </form>
-                                </details>
-                                <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Delete this category?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-700 font-bold text-sm">Delete</button>
-                                </form>
+                                </fieldset>
                             </td>
-                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ Auth::user()->canManageCategories() ? 4 : 3 }}" class="px-6 py-4 text-center text-gray-500">No categories yet.</td>
+                            <td colspan="4" class="px-6 py-4 text-center text-gray-500">No categories yet.</td>
                         </tr>
                     @endforelse
                 </tbody>

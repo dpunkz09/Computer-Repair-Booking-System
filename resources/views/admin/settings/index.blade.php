@@ -348,27 +348,35 @@
             Cancel
         </a>
     </div>
+    @else
+    <div class="mt-8 flex flex-wrap gap-3">
+        <button type="button" disabled class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm opacity-50 cursor-not-allowed">
+            Save All Settings
+        </button>
+        <a href="{{ route('dashboard') }}" class="rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
+            Back to dashboard
+        </a>
+    </div>
+    @endunless
     </fieldset>
 </form>
 
-<form action="{{ route('admin.settings.test-mail') }}" method="POST" class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+<form action="{{ route('admin.settings.test-mail') }}" method="POST" class="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm {{ ($readOnly ?? false) ? 'opacity-90' : '' }}">
     @csrf
     <h3 class="text-sm font-semibold text-gray-900 mb-1">Send Test Email</h3>
     <p class="text-sm text-gray-500 mb-4">Uses the saved SMTP settings above (save changes before testing).</p>
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <div class="flex-1">
-            <label for="test_email" class="block text-sm font-medium text-gray-700 mb-1.5">Recipient email</label>
-            <input type="email" name="test_email" id="test_email" value="{{ old('test_email', Auth::user()->email) }}" required
-                class="w-full max-w-md rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+    <fieldset @disabled($readOnly ?? false) class="border-0 p-0 m-0">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="flex-1">
+                <label for="test_email" class="block text-sm font-medium text-gray-700 mb-1.5">Recipient email</label>
+                <input type="email" name="test_email" id="test_email" value="{{ old('test_email', Auth::user()->email) }}" required
+                    class="w-full max-w-md rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit" class="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shrink-0 disabled:cursor-not-allowed disabled:opacity-60">
+                Send Test Email
+            </button>
         </div>
-        <button type="submit" class="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition shrink-0">
-            Send Test Email
-        </button>
-    </div>
-</form>
-    @else
     </fieldset>
 </form>
-    @endunless
 
 @endsection

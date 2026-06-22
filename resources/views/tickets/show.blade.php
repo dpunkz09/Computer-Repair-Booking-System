@@ -41,13 +41,19 @@
                     </button>
                 </form>
             @endcan
-            @can('delete', $ticket)
-                <form action="{{ route('tickets.destroy', $ticket) }}" method="POST" onsubmit="return confirm('Delete this ticket permanently?')">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition">Delete</button>
-                </form>
-            @endcan
+            @if(Auth::user()->isAdmin())
+                @if(Auth::user()->isFullAdmin())
+                    <form action="{{ route('tickets.destroy', $ticket) }}" method="POST" onsubmit="return confirm('Delete this ticket permanently?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition">Delete</button>
+                    </form>
+                @else
+                    <button type="button" disabled class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 opacity-50 cursor-not-allowed" title="Not available in demo mode">
+                        Delete
+                    </button>
+                @endif
+            @endif
         </div>
     </div>
 
