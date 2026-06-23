@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Mail\SmtpTestMail;
 use App\Models\User;
 use App\Services\BrandingImageService;
+use App\Services\HomepageImageService;
 use App\Support\AdminAuditLog;
+use App\Support\HomepageContent;
 use App\Support\MailSettings;
 use App\Support\SiteSettings;
 use Illuminate\Http\Request;
@@ -16,7 +18,8 @@ use Throwable;
 class AdminSettingsController extends Controller
 {
     public function __construct(
-        private BrandingImageService $brandingImages
+        private BrandingImageService $brandingImages,
+        private HomepageImageService $homepageImages,
     ) {}
 
     public function index(Request $request)
@@ -25,12 +28,14 @@ class AdminSettingsController extends Controller
         $technicians = User::query()->where('role', 'technician')->orderBy('name')->get();
         $logoUrl = SiteSettings::logoUrl();
         $hasMailPassword = MailSettings::hasPassword();
+        $homepage = HomepageContent::forAdmin();
 
         return view('admin.settings.index', [
             'settings' => $settings,
             'technicians' => $technicians,
             'logoUrl' => $logoUrl,
             'hasMailPassword' => $hasMailPassword,
+            'homepage' => $homepage,
             'readOnly' => ! $request->user()?->canManageSystemSettings(),
         ]);
     }
@@ -51,6 +56,30 @@ class AdminSettingsController extends Controller
             'welcome_badge' => 'nullable|string|max:255',
             'welcome_headline' => 'nullable|string|max:255',
             'welcome_subheadline' => 'nullable|string|max:500',
+            'hero_image' => 'nullable|image|mimes:jpeg,jpg,png,webp,gif|max:5120',
+            'remove_hero_image' => 'nullable|boolean',
+            'homepage_show_features' => 'nullable|boolean',
+            'homepage_features_title' => 'nullable|string|max:255',
+            'homepage_features_subtitle' => 'nullable|string|max:500',
+            'homepage_features' => 'nullable|array|max:8',
+            'homepage_features.*.icon' => 'nullable|string|max:10',
+            'homepage_features.*.title' => 'nullable|string|max:255',
+            'homepage_features.*.description' => 'nullable|string|max:500',
+            'homepage_show_steps' => 'nullable|boolean',
+            'homepage_steps_title' => 'nullable|string|max:255',
+            'homepage_steps_subtitle' => 'nullable|string|max:500',
+            'homepage_steps' => 'nullable|array|max:6',
+            'homepage_steps.*.title' => 'nullable|string|max:255',
+            'homepage_steps.*.description' => 'nullable|string|max:500',
+            'homepage_image_sections' => 'nullable|array|max:4',
+            'homepage_image_sections.*.title' => 'nullable|string|max:255',
+            'homepage_image_sections.*.subtitle' => 'nullable|string|max:500',
+            'homepage_image_sections.*.image_path' => 'nullable|string|max:500',
+            'homepage_section_images.*' => 'nullable|image|mimes:jpeg,jpg,png,webp,gif|max:5120',
+            'remove_homepage_section_images.*' => 'nullable|boolean',
+            'homepage_show_cta' => 'nullable|boolean',
+            'homepage_cta_title' => 'nullable|string|max:255',
+            'homepage_cta_subtitle' => 'nullable|string|max:500',
             'auto_assign_enabled' => 'nullable|boolean',
             'auto_assign_technician_id' => [
                 'nullable',
@@ -80,6 +109,8 @@ class AdminSettingsController extends Controller
         } elseif ($request->hasFile('logo')) {
             $this->brandingImages->storeLogo($request->file('logo'));
         }
+
+        $this->updateHomepageContent($request);
 
         if ($request->filled('mail_password')) {
             MailSettings::setPassword($request->input('mail_password'));
@@ -148,5 +179,68 @@ class AdminSettingsController extends Controller
         } catch (Throwable $e) {
             return back()->with('error', 'Failed to send test email: ' . $e->getMessage());
         }
+    }
+
+    private function updateHomepageContent(Request $request): void
+    {
+        $current = HomepageContent::get();
+        $heroPath = $current['hero_image_path'] ?? null;
+
+        if ($request->boolean('remove_hero_image')) {
+            $this->homepageImages->deletePath($heroPath);
+            $heroPath = null;
+        } elseif ($request->hasFile('hero_image')) {
+            $this->homepageImages->deletePath($heroPath);
+            $heroPath = $this->homepageImages->storeHero($request->file('hero_image'));
+        }
+
+        $imageSections = [];
+        $sectionsInput = $request->input('homepage_image_sections', []);
+
+        if (is_array($sectionsInput)) {
+            foreach ($sectionsInput as $index => $section) {
+                if (! is_array($section)) {
+                    continue;
+                }
+
+                $existingPath = $section['image_path'] ?? null;
+                $existingPath = is_string($existingPath) && $existingPath !== '' ? $existingPath : null;
+
+                if ($request->boolean("remove_homepage_section_images.{$index}")) {
+                    $this->homepageImages->deletePath($existingPath);
+                    $existingPath = null;
+                }
+
+                if ($request->hasFile("homepage_section_images.{$index}")) {
+                    $this->homepageImages->deletePath($existingPath);
+                    $existingPath = $this->homepageImages->storeSection(
+                        $request->file("homepage_section_images.{$index}"),
+                        (int) $index
+                    );
+                }
+
+                $imageSections[] = [
+                    'title' => (string) ($section['title'] ?? ''),
+                    'subtitle' => (string) ($section['subtitle'] ?? ''),
+                    'image_path' => $existingPath,
+                ];
+            }
+        }
+
+        HomepageContent::save([
+            'hero_image_path' => $heroPath,
+            'show_features' => $request->boolean('homepage_show_features'),
+            'features_title' => $request->input('homepage_features_title', ''),
+            'features_subtitle' => $request->input('homepage_features_subtitle', ''),
+            'features' => $request->input('homepage_features', []),
+            'show_steps' => $request->boolean('homepage_show_steps'),
+            'steps_title' => $request->input('homepage_steps_title', ''),
+            'steps_subtitle' => $request->input('homepage_steps_subtitle', ''),
+            'steps' => $request->input('homepage_steps', []),
+            'image_sections' => $imageSections,
+            'show_cta' => $request->boolean('homepage_show_cta'),
+            'cta_title' => $request->input('homepage_cta_title', ''),
+            'cta_subtitle' => $request->input('homepage_cta_subtitle', ''),
+        ]);
     }
 }

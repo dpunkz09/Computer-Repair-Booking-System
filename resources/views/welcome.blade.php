@@ -5,6 +5,11 @@
 @section('content')
 {{-- Hero --}}
 <section class="relative overflow-hidden rounded-2xl text-white shadow-xl mb-16" style="background: linear-gradient(to bottom right, {{ $site->primary_color ?? '#2563eb' }}, #4338ca);">
+    @if($homepage->hero_image_url)
+        <div class="absolute inset-0">
+            <img src="{{ $homepage->hero_image_url }}" alt="" class="h-full w-full object-cover opacity-25">
+        </div>
+    @endif
     <div class="absolute inset-0 opacity-10">
         <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white"></div>
         <div class="absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-white"></div>
@@ -54,72 +59,73 @@
     </div>
 </section>
 
-{{-- Why choose us --}}
+@if($homepage->show_features && count($homepage->features) > 0)
+{{-- Feature cards --}}
 <section class="mb-16">
     <div class="text-center mb-10">
-        <h2 class="text-3xl font-bold text-gray-900">Why Book With {{ $site->name ?? 'Us' }}?</h2>
-        <p class="text-gray-600 mt-3 max-w-2xl mx-auto">Simple, transparent repair booking designed for you — track every step from submission to pickup.</p>
+        <h2 class="text-3xl font-bold text-gray-900">{{ $homepage->features_title }}</h2>
+        @if($homepage->features_subtitle)
+            <p class="text-gray-600 mt-3 max-w-2xl mx-auto">{{ $homepage->features_subtitle }}</p>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">📋</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Easy Online Booking</h3>
-            <p class="text-gray-600 text-sm">Describe your device and issue in minutes — no phone calls or waiting on hold.</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">🔄</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Real-Time Status Updates</h3>
-            <p class="text-gray-600 text-sm">Follow your repair from submission through diagnosis, repair, and completion.</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">💬</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Direct Technician Chat</h3>
-            <p class="text-gray-600 text-sm">Message your assigned technician directly on your ticket thread.</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">🔔</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Instant Notifications</h3>
-            <p class="text-gray-600 text-sm">Get alerted when your ticket status changes or when you receive a new reply.</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">📱</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">All Devices Welcome</h3>
-            <p class="text-gray-600 text-sm">Laptops, desktops, and more — tell us your device type, brand, and operating system.</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
-            <div class="text-3xl mb-3">🔒</div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Your Data, Protected</h3>
-            <p class="text-gray-600 text-sm">Only you and your assigned technician can see your ticket details and messages.</p>
-        </div>
+        @foreach($homepage->features as $feature)
+            <div class="bg-white rounded-xl shadow p-6 border border-gray-100">
+                @if(!empty($feature['icon']))
+                    <div class="text-3xl mb-3">{{ $feature['icon'] }}</div>
+                @endif
+                <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $feature['title'] }}</h3>
+                <p class="text-gray-600 text-sm">{{ $feature['description'] }}</p>
+            </div>
+        @endforeach
     </div>
 </section>
+@endif
 
+@if($homepage->show_steps && count($homepage->steps) > 0)
 {{-- How it works --}}
 <section class="mb-16 bg-white rounded-2xl shadow p-8 md:p-12">
     <div class="text-center mb-10">
-        <h2 class="text-3xl font-bold text-gray-900">How It Works</h2>
-        <p class="text-gray-600 mt-3">Three simple steps to get your device repaired</p>
+        <h2 class="text-3xl font-bold text-gray-900">{{ $homepage->steps_title }}</h2>
+        @if($homepage->steps_subtitle)
+            <p class="text-gray-600 mt-3">{{ $homepage->steps_subtitle }}</p>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="text-center">
-            <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
-            <h3 class="font-bold text-gray-900 mb-2">Create Your Account</h3>
-            <p class="text-gray-600 text-sm">Sign up for free and set up your customer profile in seconds.</p>
-        </div>
-        <div class="text-center">
-            <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
-            <h3 class="font-bold text-gray-900 mb-2">Submit a Repair Request</h3>
-            <p class="text-gray-600 text-sm">Tell us about your device, describe the problem, and pick a service category.</p>
-        </div>
-        <div class="text-center">
-            <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
-            <h3 class="font-bold text-gray-900 mb-2">Track & Stay in Touch</h3>
-            <p class="text-gray-600 text-sm">Monitor progress and chat with your technician until your device is ready.</p>
-        </div>
+        @foreach($homepage->steps as $index => $step)
+            <div class="text-center">
+                <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">{{ $index + 1 }}</div>
+                <h3 class="font-bold text-gray-900 mb-2">{{ $step['title'] }}</h3>
+                <p class="text-gray-600 text-sm">{{ $step['description'] }}</p>
+            </div>
+        @endforeach
     </div>
 </section>
+@endif
+
+@foreach($homepage->image_sections as $sectionIndex => $section)
+<section class="mb-16">
+    <div class="grid grid-cols-1 gap-8 items-center {{ $section['image_url'] ? 'md:grid-cols-2' : '' }}">
+        @if($section['image_url'])
+            <div class="{{ $sectionIndex % 2 === 1 ? 'md:order-2' : '' }}">
+                <img src="{{ $section['image_url'] }}" alt="{{ $section['title'] }}" class="w-full rounded-2xl shadow-lg object-cover max-h-80">
+            </div>
+        @endif
+        @if($section['title'] || $section['subtitle'])
+            <div class="{{ $section['image_url'] && $sectionIndex % 2 === 1 ? 'md:order-1' : '' }} {{ $section['image_url'] ? '' : 'text-center max-w-2xl mx-auto' }}">
+                @if($section['title'])
+                    <h2 class="text-3xl font-bold text-gray-900 mb-3">{{ $section['title'] }}</h2>
+                @endif
+                @if($section['subtitle'])
+                    <p class="text-gray-600">{{ $section['subtitle'] }}</p>
+                @endif
+            </div>
+        @endif
+    </div>
+</section>
+@endforeach
 
 {{-- Service categories --}}
 @if(isset($categories) && $categories->isNotEmpty())
@@ -179,9 +185,12 @@
 
 {{-- Bottom CTA --}}
 @guest
+@if($homepage->show_cta)
 <section class="text-center rounded-2xl text-white py-12 px-8" style="background: linear-gradient(to right, {{ $site->primary_color ?? '#2563eb' }}, #4338ca);">
-    <h2 class="text-2xl md:text-3xl font-bold mb-4">Ready to Get Your Device Fixed?</h2>
-    <p class="text-blue-100 mb-8 max-w-xl mx-auto">Create a free account and submit your first repair request in under two minutes.</p>
+    <h2 class="text-2xl md:text-3xl font-bold mb-4">{{ $homepage->cta_title }}</h2>
+    @if($homepage->cta_subtitle)
+        <p class="text-blue-100 mb-8 max-w-xl mx-auto">{{ $homepage->cta_subtitle }}</p>
+    @endif
     <div class="flex flex-wrap gap-4 justify-center">
         <a href="{{ route('register') }}" class="bg-white text-blue-700 font-bold py-3 px-8 rounded-lg hover:bg-blue-50 transition shadow-lg">
             Create Free Account
@@ -191,5 +200,6 @@
         </a>
     </div>
 </section>
+@endif
 @endguest
 @endsection

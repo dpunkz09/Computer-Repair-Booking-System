@@ -1,0 +1,75 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\session-start-hook.js\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\dashboard-autostart.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\activity-journal.js\"",
+            "timeout": 3
+          },
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\context-mem-hook.js\"",
+            "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\proactive-inject.js\"",
+            "timeout": 3
+          }
+        ],
+        "matcher": "Bash|Read|Write|Edit|Grep|Glob"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\user-prompt-hook.js\"",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\context-mem-precompact.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:\\Projects\\ComTechBooking\\app-server\\node_modules\\context-mem\\hooks\\dashboard-stop.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

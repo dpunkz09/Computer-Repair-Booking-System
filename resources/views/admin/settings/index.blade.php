@@ -118,22 +118,260 @@
         </div>
 
         {{-- Homepage --}}
-        <div x-show="tab === 'homepage'" x-cloak class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-5">
-            <h2 class="text-lg font-semibold text-gray-900">Homepage Content</h2>
+        <div x-show="tab === 'homepage'" x-cloak
+             x-data="{
+                features: @js($homepage->features),
+                steps: @js($homepage->steps),
+                imageSections: @js($homepage->image_sections),
+                addFeature() { if (this.features.length < 8) this.features.push({ icon: '📋', title: '', description: '' }); },
+                removeFeature(index) { this.features.splice(index, 1); },
+                addStep() { if (this.steps.length < 6) this.steps.push({ title: '', description: '' }); },
+                removeStep(index) { this.steps.splice(index, 1); },
+                addImageSection() { if (this.imageSections.length < 4) this.imageSections.push({ title: '', subtitle: '', image_path: null, image_url: null }); },
+                removeImageSection(index) { this.imageSections.splice(index, 1); }
+             }"
+             class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-8">
             <div>
-                <label for="welcome_badge" class="block text-sm font-medium text-gray-700 mb-1.5">Hero Badge Text</label>
-                <input type="text" name="welcome_badge" id="welcome_badge" value="{{ old('welcome_badge', $settings['welcome_badge']) }}"
-                    class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <h2 class="text-lg font-semibold text-gray-900">Homepage Content</h2>
+                <p class="mt-1 text-sm text-gray-500">Customize the public landing page hero, feature cards, steps, image blocks, and call-to-action.</p>
             </div>
-            <div>
-                <label for="welcome_headline" class="block text-sm font-medium text-gray-700 mb-1.5">Hero Headline</label>
-                <input type="text" name="welcome_headline" id="welcome_headline" value="{{ old('welcome_headline', $settings['welcome_headline']) }}"
-                    class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+
+            <div class="space-y-5 border-b border-gray-100 pb-8">
+                <h3 class="text-sm font-semibold text-gray-900">Hero</h3>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="welcome_badge" class="block text-sm font-medium text-gray-700 mb-1.5">Badge Text</label>
+                        <input type="text" name="welcome_badge" id="welcome_badge" value="{{ old('welcome_badge', $settings['welcome_badge']) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="welcome_headline" class="block text-sm font-medium text-gray-700 mb-1.5">Headline</label>
+                        <input type="text" name="welcome_headline" id="welcome_headline" value="{{ old('welcome_headline', $settings['welcome_headline']) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="welcome_subheadline" class="block text-sm font-medium text-gray-700 mb-1.5">Subheadline</label>
+                    <textarea name="welcome_subheadline" id="welcome_subheadline" rows="3"
+                        class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('welcome_subheadline', $settings['welcome_subheadline']) }}</textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Hero Background Image</label>
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+                        <div class="flex h-32 min-w-[200px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                            @if($homepage->hero_image_url)
+                                <img src="{{ $homepage->hero_image_url }}" alt="Current hero image" class="h-full w-full object-cover">
+                            @else
+                                <span class="text-sm text-gray-400 px-4 text-center">No hero image — gradient only</span>
+                            @endif
+                        </div>
+                        <div class="flex-1 space-y-3">
+                            <input type="file" name="hero_image" accept="image/jpeg,image/png,image/webp,image/gif"
+                                class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100">
+                            <p class="text-xs text-gray-500">Optional. Shown behind the hero text. Resized to max 1920px wide.</p>
+                            @if($homepage->hero_image_url)
+                                <label class="flex items-center gap-2 text-sm text-rose-600">
+                                    <input type="checkbox" name="remove_hero_image" value="1" class="rounded border-gray-300">
+                                    Remove hero image
+                                </label>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label for="welcome_subheadline" class="block text-sm font-medium text-gray-700 mb-1.5">Hero Subheadline</label>
-                <textarea name="welcome_subheadline" id="welcome_subheadline" rows="3"
-                    class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('welcome_subheadline', $settings['welcome_subheadline']) }}</textarea>
+
+            <div class="space-y-5 border-b border-gray-100 pb-8">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Feature Cards</h3>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="hidden" name="homepage_show_features" value="0">
+                        <input type="checkbox" name="homepage_show_features" value="1"
+                            {{ old('homepage_show_features', $homepage->show_features) ? 'checked' : '' }}
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Show section
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="homepage_features_title" class="block text-sm font-medium text-gray-700 mb-1.5">Section Title</label>
+                        <input type="text" name="homepage_features_title" id="homepage_features_title"
+                            value="{{ old('homepage_features_title', $homepage->features_title) }}"
+                            placeholder="Why Book With Us?"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <p class="mt-1 text-xs text-gray-500">Use <code class="rounded bg-gray-100 px-1">{site_name}</code> to insert your site name.</p>
+                    </div>
+                    <div>
+                        <label for="homepage_features_subtitle" class="block text-sm font-medium text-gray-700 mb-1.5">Section Subtitle</label>
+                        <input type="text" name="homepage_features_subtitle" id="homepage_features_subtitle"
+                            value="{{ old('homepage_features_subtitle', $homepage->features_subtitle) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <template x-for="(feature, index) in features" :key="'feature-' + index">
+                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                            <div class="mb-3 flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500" x-text="'Feature ' + (index + 1)"></span>
+                                <button type="button" @click="removeFeature(index)" class="text-xs font-semibold text-rose-600 hover:text-rose-700">Remove</button>
+                            </div>
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-12">
+                                <div class="md:col-span-2">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Icon</label>
+                                    <input type="text" :name="'homepage_features[' + index + '][icon]'" x-model="feature.icon" maxlength="10"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 text-center text-lg shadow-sm">
+                                </div>
+                                <div class="md:col-span-4">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                    <input type="text" :name="'homepage_features[' + index + '][title]'" x-model="feature.title"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                                <div class="md:col-span-6">
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                                    <input type="text" :name="'homepage_features[' + index + '][description]'" x-model="feature.description"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" @click="addFeature()" x-show="features.length < 8"
+                    class="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600">
+                    + Add Feature Card
+                </button>
+            </div>
+
+            <div class="space-y-5 border-b border-gray-100 pb-8">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">How It Works</h3>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="hidden" name="homepage_show_steps" value="0">
+                        <input type="checkbox" name="homepage_show_steps" value="1"
+                            {{ old('homepage_show_steps', $homepage->show_steps) ? 'checked' : '' }}
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Show section
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="homepage_steps_title" class="block text-sm font-medium text-gray-700 mb-1.5">Section Title</label>
+                        <input type="text" name="homepage_steps_title" id="homepage_steps_title"
+                            value="{{ old('homepage_steps_title', $homepage->steps_title) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="homepage_steps_subtitle" class="block text-sm font-medium text-gray-700 mb-1.5">Section Subtitle</label>
+                        <input type="text" name="homepage_steps_subtitle" id="homepage_steps_subtitle"
+                            value="{{ old('homepage_steps_subtitle', $homepage->steps_subtitle) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <template x-for="(step, index) in steps" :key="'step-' + index">
+                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                            <div class="mb-3 flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500" x-text="'Step ' + (index + 1)"></span>
+                                <button type="button" @click="removeStep(index)" class="text-xs font-semibold text-rose-600 hover:text-rose-700">Remove</button>
+                            </div>
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                    <input type="text" :name="'homepage_steps[' + index + '][title]'" x-model="step.title"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                                    <input type="text" :name="'homepage_steps[' + index + '][description]'" x-model="step.description"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" @click="addStep()" x-show="steps.length < 6"
+                    class="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600">
+                    + Add Step
+                </button>
+            </div>
+
+            <div class="space-y-5 border-b border-gray-100 pb-8">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Image Sections</h3>
+                    <span class="text-xs text-gray-500">Optional blocks with image + text (max 4)</span>
+                </div>
+                <div class="space-y-4">
+                    <template x-for="(section, index) in imageSections" :key="'section-' + index">
+                        <div class="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wide text-gray-500" x-text="'Image Block ' + (index + 1)"></span>
+                                <button type="button" @click="removeImageSection(index)" class="text-xs font-semibold text-rose-600 hover:text-rose-700">Remove</button>
+                            </div>
+                            <input type="hidden" :name="'homepage_image_sections[' + index + '][image_path]'" :value="section.image_path || ''">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+                                    <input type="text" :name="'homepage_image_sections[' + index + '][title]'" x-model="section.title"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Subtitle</label>
+                                    <input type="text" :name="'homepage_image_sections[' + index + '][subtitle]'" x-model="section.subtitle"
+                                        class="w-full rounded-lg border-gray-200 bg-white px-3 py-2 shadow-sm">
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
+                                <div class="flex h-28 min-w-[160px] items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
+                                    <template x-if="section.image_url">
+                                        <img :src="section.image_url" alt="" class="h-full w-full object-cover">
+                                    </template>
+                                    <template x-if="!section.image_url">
+                                        <span class="text-xs text-gray-400 px-3 text-center">No image yet</span>
+                                    </template>
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <input type="file" :name="'homepage_section_images[' + index + ']'" accept="image/jpeg,image/png,image/webp,image/gif"
+                                        class="block w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100">
+                                    <template x-if="section.image_url">
+                                        <label class="flex items-center gap-2 text-sm text-rose-600">
+                                            <input type="checkbox" :name="'remove_homepage_section_images[' + index + ']'" value="1" class="rounded border-gray-300">
+                                            Remove image
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" @click="addImageSection()" x-show="imageSections.length < 4"
+                    class="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm font-semibold text-gray-600 hover:border-blue-300 hover:text-blue-600">
+                    + Add Image Section
+                </button>
+            </div>
+
+            <div class="space-y-5">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <h3 class="text-sm font-semibold text-gray-900">Bottom Call-to-Action</h3>
+                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                        <input type="hidden" name="homepage_show_cta" value="0">
+                        <input type="checkbox" name="homepage_show_cta" value="1"
+                            {{ old('homepage_show_cta', $homepage->show_cta) ? 'checked' : '' }}
+                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Show for guests
+                    </label>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div>
+                        <label for="homepage_cta_title" class="block text-sm font-medium text-gray-700 mb-1.5">CTA Title</label>
+                        <input type="text" name="homepage_cta_title" id="homepage_cta_title"
+                            value="{{ old('homepage_cta_title', $homepage->cta_title) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="homepage_cta_subtitle" class="block text-sm font-medium text-gray-700 mb-1.5">CTA Subtitle</label>
+                        <input type="text" name="homepage_cta_subtitle" id="homepage_cta_subtitle"
+                            value="{{ old('homepage_cta_subtitle', $homepage->cta_subtitle) }}"
+                            class="w-full rounded-xl border-gray-200 bg-gray-50 px-4 py-2.5 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
             </div>
         </div>
 

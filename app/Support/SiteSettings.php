@@ -30,6 +30,7 @@ class SiteSettings
             'welcome_badge' => 'Computer Repair Booking System',
             'welcome_headline' => 'Fast, Reliable Repairs — Booked Online',
             'welcome_subheadline' => 'Submit repair requests, track ticket status in real time, and communicate directly with our technicians — all in one place.',
+            'homepage_content' => '',
             'logo_path' => null,
             'auto_assign_enabled' => false,
             'auto_assign_technician_id' => null,

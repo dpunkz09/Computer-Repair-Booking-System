@@ -13,6 +13,8 @@ use App\Http\Controllers\ServiceCategoryController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TwoFactorController;
 use App\Models\ServiceCategory;
+use App\Support\HomepageContent;
+use App\Support\SiteSettings;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -23,8 +25,10 @@ Route::get('/', function () {
     }
 
     $categories = ServiceCategory::active()->orderBy('name')->get();
+    $site = SiteSettings::siteObject();
+    $homepage = HomepageContent::forPublic($site->name);
 
-    return view('welcome', compact('categories'));
+    return view('welcome', compact('categories', 'homepage'));
 })->name('home');
 
 Route::get('/privacy', [LegalController::class, 'privacy'])->name('legal.privacy');
